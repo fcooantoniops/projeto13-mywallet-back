@@ -39,4 +39,25 @@ async function postRegisters (req, res) {
     };
 };
 
-export { postRegisters };
+async function getRegisters (req, res) {
+    const {authorization} = req.headers;
+    const token  = authorization?.replace('Bearer ', '');
+
+    if (!token){
+        return res.sendStatus(401);
+    };
+
+    try{
+        const session = await db.collection("sessions").findOne({ token });
+        if (!session){
+            return res.sendStatus(401)
+        };
+        const registers = await db.collection("registers").find({userId: session.userId}).toArray();
+
+        res.send(registers).status(200);
+    } catch {
+        res.sendStatus(422);
+    };
+}
+
+export { postRegisters, getRegisters };
